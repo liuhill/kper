@@ -1,0 +1,471 @@
+
+<!DOCTYPE HTML>
+<!DOCTYPE html PUBLIC "" "">
+<HTML>
+<HEAD>
+<META content="IE=11.0000" 
+http-equiv="X-UA-Compatible">
+		 
+<META charset="utf-8">		 
+<META name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<TITLE>快拍客</TITLE>		 
+<STYLE>
+			html, body {
+				height: 100%;
+			}
+
+			body {
+				background-color: #000000;
+				margin: 0;
+				font-family: Arial;
+				overflow: hidden;
+			}
+
+			a {
+				color: #ffffff;
+			}
+
+			#info {
+				position: absolute;
+				width: 100%;
+				color: #ffffff;
+				padding: 5px;
+				font-family: Monospace;
+				font-size: 13px;
+				font-weight: bold;
+				text-align: center;
+			}
+
+			#menu {
+				position: absolute;
+				bottom: 20px;
+				width: 100%;
+				text-align: center;
+			}
+
+			.element {
+				width: 120px;
+				height: 160px;
+				box-shadow: 0px 0px 12px rgba(0,255,255,0.5);
+				border: 1px solid rgba(127,255,255,0.25);
+
+				cursor: default;
+			}
+
+			.element:hover {
+				box-shadow: 0px 0px 12px rgba(0,255,255,0.75);
+				border: 1px solid rgba(127,255,255,0.75);
+			}
+				
+				.element img {
+					position: absolute;
+					border:none;
+				}
+				
+				.element .number {
+					position: absolute;
+					top: 20px;
+					right: 20px;
+					font-size: 12px;
+					color: rgba(127,255,255,0.75);
+				}
+
+				.element .symbol {
+					position: absolute;
+					top: 40px;
+					left: 0px;
+					right: 0px;
+					font-size: 60px;
+					font-weight: bold;
+					color: rgba(255,255,255,0.75);
+					text-shadow: 0 0 10px rgba(0,255,255,0.95);
+				}
+
+				.element .details {
+					position: absolute;
+					bottom: 15px;
+					left: 0px;
+					right: 0px;
+					font-size: 12px;
+					color: rgba(127,255,255,0.75);
+				}
+				
+			button {
+				color: rgba(127,255,255,0.75);
+				background: transparent;
+				outline: 1px solid rgba(127,255,255,0.75);
+				border: 0px;
+				padding: 5px 10px;
+				cursor: pointer;
+			}
+			button:hover {
+				background-color: rgba(0,255,255,0.5);
+			}
+			button:active {
+				color: #000000;
+				background-color: rgba(0,255,255,0.75);
+			}
+		</STYLE>
+	 
+<META name="GENERATOR" content="MSHTML 11.00.9600.16476">
+
+
+	<link href="css/lightbox.css" rel="stylesheet" />
+</HEAD>	 
+<BODY>
+	
+<script src="js/jquery-1.10.2.min.js"></script>
+
+<script src="js/lightbox-2.6.min.js"></script>
+	
+<SCRIPT src="js/three.min.js"></SCRIPT>
+		 
+<SCRIPT src="js/tween.min.js"></SCRIPT>
+		 
+<SCRIPT src="js/TrackballControls.js"></SCRIPT>
+		 
+<SCRIPT src="js/CSS3DRenderer.js"></SCRIPT>
+		 
+<DIV id="container"></DIV>
+<DIV id="info">
+	我们不是摄影师，我们也不懂美工，我们只是喜欢拍拍而已，我们是——<font size="6" color="red">快拍客！</font>
+	<A href="https://github.com/liuhill/kper" target="_blank">源代码</A>
+</DIV>
+<DIV>
+	<img src='img/weixin.jpg' width = '130px',height = '130px'></br>
+	<font size="3" color="white">使用方法:</br><font size="1" color="red">1）微信添加公共账号</br>2）发送图片</br>3）刷新！</br>~~你的照片上墙了~</font></br>
+</DIV>
+
+<div align="right">
+	<h3>3D效果图</h3></br>
+	<img src='img/table.gif' width = '80px',height = '80px'></br>
+	<img src='img/sphere.gif'  width = '80px',height = '80px'></br>	
+	<img src='img/helix.gif'  width = '80px',height = '80px'></br>
+	<img src='img/grid.gif'  width = '80px',height = '80px'></br>
+</div>
+
+<DIV id="menu">
+	<BUTTON id="table">照片墙</BUTTON>
+	<BUTTON id="sphere">水晶球</BUTTON>
+	<BUTTON id="helix">螺旋塔</BUTTON>
+	<BUTTON id="grid">展览厅</BUTTON>
+
+<SCRIPT>	
+		//判断浏览器类型
+		var Sys={};
+		  var ua=navigator.userAgent.toLowerCase();
+		  var s;
+		  (s=ua.match(/msie ([\d.]+)/))?Sys.ie=s[1]:
+		  (s=ua.match(/firefox\/([\d.]+)/))?Sys.firefox=s[1]:
+		  (s=ua.match(/chrome\/([\d.]+)/))?Sys.chrome=s[1]:
+		  (s=ua.match(/opera.([\d.]+)/))?Sys.opera=s[1]:
+		  (s=ua.match(/version\/([\d.]+).*safari/))?Sys.safari=s[1]:0;
+		  if(!(Sys.chrome || Sys.firefox)){//Js判断为谷歌chrome、火狐firefox浏览器
+			  document.write('</br><font size="1" color="white">查看3D效果请使用：谷歌chrome、火狐firefox</font>');
+		  }
+</SCRIPT>	
+	
+<SCRIPT>
+			//建议值[18,6]
+			var table = [];
+			
+			var camera, scene, renderer;
+			var controls;
+
+			var objects = [];
+			var targets = { table: [], sphere: [], helix: [], grid: [] };
+
+
+//		    isBrowser();
+
+			
+			getImgs();
+			init();
+			animate();
+			
+			function init() {
+
+				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.z = 3000;
+
+				scene = new THREE.Scene();
+				
+				
+				for ( var i = 0; i < table.length ; i ++ ) {
+
+					var element = document.createElement( 'div' );
+					element.className = 'element';
+					element.style.backgroundColor = 'rgba(0,127,127,' + ( Math.random() * 0.5 + 0.25 ) + ')';
+
+					var a = document.createElement('a');
+					a.href =  'photo/' + table[ i ][0];
+					a.setAttribute('data-lightbox','roadtrip');
+					a.setAttribute('title',a.href.substr(a.href.lastIndexOf('/')+1));
+//					a.setAttribute('text-align','center');
+					
+					var image=new Image();
+					image.src='photoResize/'+table[ i ][0];
+					a.appendChild(image)
+					
+					element.appendChild( a );
+
+					var object = new THREE.CSS3DObject( element );
+					object.position.x = Math.random() * 4000 - 2000;
+					object.position.y = Math.random() * 4000 - 2000;
+					object.position.z = Math.random() * 4000 - 2000;
+					scene.add( object );
+
+					objects.push( object );
+
+					var object = new THREE.Object3D();
+					object.position.x = ( table[ i ] [1] * 140 ) - 1330;
+					object.position.y = - ( table[ i ] [2]* 180 ) + 990;
+					targets.table.push( object );					
+
+					image.addEventListener('load',function(event)
+					{
+						resizeImg(this,120,160);
+					},false);
+
+				}
+
+				// sphere
+
+				var vector = new THREE.Vector3();
+
+				for ( var i = 0, l = objects.length; i < l; i ++ ) {
+
+					var phi = Math.acos( -1 + ( 2 * i ) / l );
+					var theta = Math.sqrt( l * Math.PI ) * phi;
+
+					var object = new THREE.Object3D();
+
+					object.position.x = 800 * Math.cos( theta ) * Math.sin( phi );
+					object.position.y = 800 * Math.sin( theta ) * Math.sin( phi );
+					object.position.z = 800 * Math.cos( phi );
+
+					vector.copy( object.position ).multiplyScalar( 2 );
+
+					object.lookAt( vector );
+
+					targets.sphere.push( object );
+
+				}
+
+				// helix
+
+				var vector = new THREE.Vector3();
+
+				for ( var i = 0, l = objects.length; i < l; i ++ ) {
+
+					var phi = i * 0.175 + Math.PI;
+
+					var object = new THREE.Object3D();
+
+					object.position.x = 900 * Math.sin( phi );
+					object.position.y = - ( i * 8 ) + 450;
+					object.position.z = 900 * Math.cos( phi );
+
+					vector.x = object.position.x * 2;
+					vector.y = object.position.y;
+					vector.z = object.position.z * 2;
+
+					object.lookAt( vector );
+
+					targets.helix.push( object );
+
+				}
+
+				// grid
+
+				for ( var i = 0; i < objects.length; i ++ ) {
+
+					var object = new THREE.Object3D();
+
+					object.position.x = ( ( i % 5 ) * 400 ) - 800;
+					object.position.y = ( - ( Math.floor( i / 5 ) % 5 ) * 400 ) + 800;
+					object.position.z = ( Math.floor( i / 25 ) ) * 1000 - 2000;
+
+					targets.grid.push( object );
+
+				}
+
+				//
+
+				renderer = new THREE.CSS3DRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.domElement.style.position = 'absolute';
+				document.getElementById( 'container' ).appendChild( renderer.domElement );
+
+				//
+
+				controls = new THREE.TrackballControls( camera, renderer.domElement );
+				controls.rotateSpeed = 0.5;
+				controls.minDistance = 500;
+				controls.maxDistance = 6000;
+				controls.addEventListener( 'change', render );
+
+				var button = document.getElementById( 'table' );
+				button.addEventListener( 'click', function ( event ) {
+
+					transform( targets.table, 2000 );
+
+				}, false );
+
+				var button = document.getElementById( 'sphere' );
+				button.addEventListener( 'click', function ( event ) {
+
+					transform( targets.sphere, 2000 );
+
+				}, false );
+
+				var button = document.getElementById( 'helix' );
+				button.addEventListener( 'click', function ( event ) {
+
+					transform( targets.helix, 2000 );
+
+				}, false );
+
+				var button = document.getElementById( 'grid' );
+				button.addEventListener( 'click', function ( event ) {
+
+					transform( targets.grid, 2000 );
+
+				}, false );
+
+				//transform( targets.table, 5000 );
+				transform( targets.helix, 2000 );
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function transform( targets, duration ) {
+
+				TWEEN.removeAll();
+
+				for ( var i = 0; i < objects.length; i ++ ) {
+
+					var object = objects[ i ];
+					var target = targets[ i ];
+
+					new TWEEN.Tween( object.position )
+						.to( { x: target.position.x, y: target.position.y, z: target.position.z }, Math.random() * duration + duration )
+						.easing( TWEEN.Easing.Exponential.InOut )
+						.start();
+
+					new TWEEN.Tween( object.rotation )
+						.to( { x: target.rotation.x, y: target.rotation.y, z: target.rotation.z }, Math.random() * duration + duration )
+						.easing( TWEEN.Easing.Exponential.InOut )
+						.start();
+
+				}
+
+				new TWEEN.Tween( this )
+					.to( {}, duration * 2 )
+					.onUpdate( render )
+					.start();
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				TWEEN.update();
+				controls.update();
+
+			}
+
+			function render() {
+
+				renderer.render( scene, camera );
+
+			}
+
+			// 说明：用 JavaScript 实现网页图片等比例缩放 
+			function resizeImg(image,distWidth,distHeight) 
+			{ 
+				srcWidth = image.width;
+				srcHeight = image.height;
+				var ratio = 1;
+				if(srcWidth>0 && srcHeight>0) 
+				{ 
+					if(srcWidth/srcHeight>= distWidth/distHeight) 
+					{ 
+						if(srcWidth>distWidth) 
+						{ 
+							ratio = distWidth/srcWidth; 
+						} 
+					} 
+					else 
+					{ 
+						if(srcHeight>distHeight) 
+						{ 
+							ratio = distHeight/srcHeight; 
+						} 
+					} 
+				} 
+				var width = srcWidth*ratio;
+				var heigh = srcHeight*ratio;
+				
+				image.style.width = width.toString() + 'px';
+				image.style.height = heigh.toString() + 'px';
+
+				if(width < distWidth)
+					image.style.paddingLeft = ((distWidth - width)/2).toString() + 'px';
+					
+				if(heigh < distHeight)
+					image.style.paddingTop = ((distHeight - heigh)/2).toString() + 'px';
+			} 	
+			
+			//获得指定文件夹图片名称列表，同时设置图片的位置
+			function getImgs (){
+				var arrfiles = [{"name":"20140209~144950~52901900-ozKfgjrveB3dMrB53rqjPsK2gCGs.jpg","size":12.45,"time":"2014-02-09 14:49:50"},{"name":"20140209~144827~60038500-ozKfgjrveB3dMrB53rqjPsK2gCGs.jpg","size":13.06,"time":"2014-02-09 14:48:28"},{"name":"20140208~172938~76920900-ozKfgjqWaWMwq545-ZojtMkPsvCQ.jpg","size":14.44,"time":"2014-02-08 17:29:40"},{"name":"20140207~135123~46562500-ozKfgjrveB3dMrB53rqjPsK2gCGs.jpg","size":7.15,"time":"2014-02-07 13:51:23"},{"name":"20140207~135042~23487400-ozKfgjrveB3dMrB53rqjPsK2gCGs.jpg","size":15.33,"time":"2014-02-07 13:50:42"},{"name":"20140207~134902~26447900-ozKfgjrveB3dMrB53rqjPsK2gCGs.jpg","size":13.28,"time":"2014-02-07 13:49:02"},{"name":"20140207~134544~58845400@ozKfgjrveB3dMrB53rqjPsK2gCGs.jpg","size":10.84,"time":"2014-02-07 13:45:44"},{"name":"20140207~134419~78913500-ozKfgjrveB3dMrB53rqjPsK2gCGs.jpg","size":17.32,"time":"2014-02-07 13:44:20"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207134028~03208300.jpg","size":6.3,"time":"2014-02-07 13:40:28"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207134024~15287900.jpg","size":11.23,"time":"2014-02-07 13:40:24"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207134020~00045500.jpg","size":9.5,"time":"2014-02-07 13:40:20"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207114702~11463100.jpg","size":9.81,"time":"2014-02-07 11:47:02"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207114700~94524600.jpg","size":13.99,"time":"2014-02-07 11:47:01"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207114701~55581300.jpg","size":21.82,"time":"2014-02-07 11:47:01"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207114659~13870700.jpg","size":16.69,"time":"2014-02-07 11:46:59"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207114658~09673800.jpg","size":20.97,"time":"2014-02-07 11:46:58"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207114653~17304200.jpg","size":11.34,"time":"2014-02-07 11:46:53"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207114652~66649800.jpg","size":11.64,"time":"2014-02-07 11:46:52"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207114644~93292700.jpg","size":13.75,"time":"2014-02-07 11:46:45"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207114644~13270200.jpg","size":13.28,"time":"2014-02-07 11:46:44"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207095338~46378700.jpg","size":9.47,"time":"2014-02-07 09:53:38"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207095116~77062300.jpg","size":11.97,"time":"2014-02-07 09:51:17"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207094644~58052200.jpg","size":12.65,"time":"2014-02-07 09:46:44"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140207094203~81234200.jpg","size":7.08,"time":"2014-02-07 09:42:04"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140121172011~39273300.jpg","size":9.06,"time":"2014-01-21 17:20:11"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140121171943~22773600.jpg","size":13.53,"time":"2014-01-21 17:19:43"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140121171639~94597700.jpg","size":9.06,"time":"2014-01-21 17:16:40"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144347~65982500.jpg","size":20.97,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144349~02021500.jpg","size":20.97,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144349~03501800.jpg","size":20.22,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144353~60797100.jpg","size":15.67,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144452~26229100.jpg","size":9.4,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144452~62363200.jpg","size":9.73,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109162232~30496000.jpg","size":12.75,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140112110224~77691600.jpg","size":10.61,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113115200~11845500.jpg","size":9.43,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113132623~32544000.jpg","size":9.73,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113133650~75122200.jpg","size":9.89,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113133842~69389100.jpg","size":14.23,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113134019~43129500.jpg","size":11.67,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114155941~77003900.jpg","size":12.82,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114155959~17919700.jpg","size":7.12,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114161140~10924000.jpg","size":13.08,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114161152~46014400.jpg","size":9.78,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114162053~80098200.jpg","size":9.21,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114162054~75423200.jpg","size":7.35,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114162055~55046000.jpg","size":9.31,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114162640~94810000.jpg","size":16.55,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114225643~19585800.jpg","size":9.46,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114230815~14753600.jpg","size":8.12,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114231012~71871200.jpg","size":8.68,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114231031~10664200.jpg","size":8.55,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114231257~77382800.jpg","size":11.61,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114231331~33878500.jpg","size":11.69,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114231502~73782800.jpg","size":9.33,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114231557~74938200.jpg","size":10.74,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114231732~56754700.jpg","size":7.56,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114232054~62512000.jpg","size":9.88,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114232155~15678800.jpg","size":11.88,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114232353~10956000.jpg","size":10.04,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114232514~52802400.jpg","size":8.89,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114232636~06196200.jpg","size":14.23,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114233047~45803400.jpg","size":10.36,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114233327~58241500.jpg","size":11.8,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114233511~33413700.jpg","size":11.43,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114233647~18437200.jpg","size":10.85,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114233652~91588600.jpg","size":11.67,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114233659~16887300.jpg","size":11.67,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114233742~51179500.jpg","size":11.95,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114233820~34585400.jpg","size":10,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114233918~22101100.jpg","size":11.69,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114234059~35500600.jpg","size":9.65,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114234132~51586000.jpg","size":8.76,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114234203~93124700.jpg","size":10.71,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114234317~14633700.jpg","size":10.77,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114234445~53991600.jpg","size":9.34,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140114234640~41011200.jpg","size":9.5,"time":"2014-01-21 16:07:36"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109125648~74305800.jpg","size":21.82,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144345~83529200.jpg","size":20.11,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144348~63547600.jpg","size":16.81,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144351~65531200.jpg","size":16.69,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144352~55916800.jpg","size":20.22,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144352~87588200.jpg","size":15.72,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144448~27022600.jpg","size":9.81,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144452~18372500.jpg","size":9.5,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144453~14158800.jpg","size":9.51,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144453~64747700.jpg","size":9.14,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144455~71265900.jpg","size":7.68,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144457~71122900.jpg","size":19.68,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140109144458~89374200.jpg","size":6.97,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140111104612~34262500.jpg","size":7.1,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140112110636~33269200.jpg","size":16.11,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140112110816~66427600.jpg","size":17.31,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113131647~71794700.jpg","size":12.57,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113132039~55537400.jpg","size":11.33,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113132116~33086500.jpg","size":11.67,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113132216~70244400.jpg","size":21.42,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113132348~79223800.jpg","size":10.78,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113132410~56482100.jpg","size":9.73,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113132429~90888300.jpg","size":11.41,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113132624~94350400.jpg","size":11.21,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113132631~57836500.jpg","size":11.46,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113132634~50423800.jpg","size":11.16,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113133712~53978900.jpg","size":11.37,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113133730~12906900.jpg","size":9.71,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113133749~93594800.jpg","size":10.27,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113133819~02779100.jpg","size":15.88,"time":"2014-01-21 16:07:35"},{"name":"ozKfgjrveB3dMrB53rqjPsK2gCGs-20140113133822~90803400.jpg","size":11.67,"time":"2014-01-21 16:07:35"}];
+				var row =1;
+				var col = 1;
+				for(var i = 0; i < arrfiles.length;i++)
+				{
+					var file = [];
+					file[0] = arrfiles[i]['name'];
+					file[1] = col++;
+					file[2] = row;
+					table[i] = file;
+					if(col > 18)
+					{
+						col = 1;
+						row++;
+					}
+				}	
+			}
+
+			//判断浏览器类型
+		function isBrowser(){
+		  var Sys={};
+		  var ua=navigator.userAgent.toLowerCase();
+		  var s;
+		  (s=ua.match(/msie ([\d.]+)/))?Sys.ie=s[1]:
+		  (s=ua.match(/firefox\/([\d.]+)/))?Sys.firefox=s[1]:
+		  (s=ua.match(/chrome\/([\d.]+)/))?Sys.chrome=s[1]:
+		  (s=ua.match(/opera.([\d.]+)/))?Sys.opera=s[1]:
+		  (s=ua.match(/version\/([\d.]+).*safari/))?Sys.safari=s[1]:0;
+		  if(!(Sys.chrome || Sys.firefox)){//Js判断为谷歌chrome浏览器
+			  alert('3D效果仅测试浏览器：谷歌chrome、火狐firefox');
+		  }
+		}
+
+			
+		</SCRIPT>
+	 </DIV>
+ </BODY>
+</HTML>
